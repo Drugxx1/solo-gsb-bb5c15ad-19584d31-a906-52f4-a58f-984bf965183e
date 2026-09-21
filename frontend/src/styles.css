@@ -1,0 +1,190 @@
+:root {
+  --border: #d0d7de;
+  --bg: #f6f8fa;
+  --accent: #1f6feb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  color: #1f2328;
+}
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px 64px;
+}
+
+header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 2px solid var(--border);
+  margin-bottom: 16px;
+}
+
+h1 {
+  font-size: 22px;
+  margin: 0;
+}
+
+h2 {
+  font-size: 17px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+h3 {
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+section {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background: var(--bg);
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.primary:hover {
+  background: #1a5fd0;
+}
+
+button.primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+button.small {
+  padding: 3px 10px;
+  font-size: 13px;
+}
+
+button.danger {
+  color: #cf222e;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 14px;
+}
+
+th,
+td {
+  border: 1px solid var(--border);
+  padding: 5px 8px;
+  text-align: left;
+}
+
+th {
+  background: var(--bg);
+  white-space: nowrap;
+}
+
+td input[type='number'] {
+  width: 90px;
+}
+
+input[type='number'],
+input.name {
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
+}
+
+input.name {
+  min-width: 110px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+.disabled-row {
+  background: #f0f0f0;
+  color: #888;
+}
+
+.hint {
+  color: #656d76;
+  font-size: 13px;
+  margin-bottom: 0;
+}
+
+.banner {
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
+.banner.ok {
+  background: #dafbe1;
+  border: 1px solid #2da44e;
+}
+
+.banner.approximate {
+  background: #fff8c5;
+  border: 1px solid #d4a72c;
+}
+
+.banner.conflict,
+.banner.error {
+  background: #ffebe9;
+  border: 1px solid #cf222e;
+}
+
+.dev-ok {
+  color: #1a7f37;
+}
+
+.dev-bad {
+  color: #cf222e;
+  font-weight: 600;
+}
+
+.zero {
+  color: #999;
+}
