@@ -188,3 +188,101 @@ input.name {
 .zero {
   color: #999;
 }
+
+/* ---------- 鲁棒性分析 ---------- */
+
+.robust-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0;
+}
+
+.robust-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.robust-controls input[type='number'] {
+  width: 100px;
+  padding: 4px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.robust-controls select {
+  padding: 5px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.sensitive-row {
+  background: #fff1e5;
+  font-weight: 600;
+}
+
+.sensitive-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #bc4c00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.resid-up {
+  color: #bc4c00;
+  font-weight: 600;
+}
+
+.infeasible {
+  color: #cf222e;
+  font-weight: 600;
+}
+
+.robust-detail {
+  margin-top: 14px;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 900px) {
+  .scenario-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scenario-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #fbfdff;
+  overflow-x: auto;
+}
+
+.scenario-card h5 {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.scenario-card table {
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.scenario-meta {
+  margin: 4px 0;
+  font-size: 13px;
+}

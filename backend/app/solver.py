@@ -14,7 +14,7 @@
 """
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 from scipy.optimize import minimize
@@ -30,36 +30,67 @@ def _empty(status: str, messages: List[str]) -> SolveResponse:
     return SolveResponse(status=status, messages=messages)  # type: ignore[arg-type]
 
 
-def solve_recipe(
+def solve_core(
     oxides: List[str],
     target: Dict[str, float],
     materials: List[MaterialIn],
-) -> SolveResponse:
+    fixed: Optional[Dict[int, float]] = None,
+) -> Tuple[SolveResponse, Optional[np.ndarray]]:
+    """核心求解，返回 (响应, 原始用量向量)。
+
+    fixed：将指定下标原料的用量固定为给定值（其上下界同时设为该值），
+    供鲁棒性分析在「某原料用量被强制调整」后重新求解。
+
+    若状态为 conflict / error，第二个返回值为 None。
+    """
+    fixed = fixed or {}
+
     # ---------- 基本校验 ----------
     if not oxides:
-        return _empty("error", ["至少需要定义一种氧化物"])
+        return _empty("error", ["至少需要定义一种氧化物"]), None
     if not materials:
-        return _empty("error", ["至少需要定义一种原料"])
+        return _empty("error", ["至少需要定义一种原料"]), None
     enabled = [m for m in materials if not m.disabled]
     if not enabled:
-        return _empty("error", ["所有原料均被禁用，无法求解"])
+        return _empty("error", ["所有原料均被禁用，无法求解"]), None
 
     for o in oxides:
         t = float(target.get(o, 0.0))
         if t < 0:
-            return _empty("error", [f"氧化物 {o} 的目标值不能为负数"])
+            return _empty("error", [f"氧化物 {o} 的目标值不能为负数"]), None
     for m in materials:
         for o, v in m.composition.items():
             if v < 0:
-                return _empty("error", [f"原料「{m.name}」中 {o} 的含量不能为负数"])
+                return (
+                    _empty("error", [f"原料「{m.name}」中 {o} 的含量不能为负数"]),
+                    None,
+                )
+    for idx, amount in fixed.items():
+        if not (0 <= idx < len(materials)):
+            return _empty("error", [f"内部错误：固定用量的原料下标 {idx} 不存在"]), None
+        if not np.isfinite(amount) or amount < -EPS:
+            return (
+                _empty("error", [f"原料「{materials[idx].name}」的固定用量不能为负数"]),
+                None,
+            )
 
     # ---------- 边界构造与冲突检测 ----------
     lbs: List[float] = []
     ubs: List[float] = []
     conflicts: List[str] = []
-    for m in materials:
+    for i, m in enumerate(materials):
         if m.disabled:
             lo = hi = 0.0
+        elif i in fixed:
+            amount = float(fixed[i])
+            cfg_lo = max(0.0, float(m.min))
+            cfg_hi = min(float(m.max), TOTAL)
+            if amount < cfg_lo - EPS or amount > cfg_hi + EPS:
+                conflicts.append(
+                    f"原料「{m.name}」被调整后的用量 {amount:g} 超出其用量边界 "
+                    f"[{cfg_lo:g}, {cfg_hi:g}]"
+                )
+            lo = hi = amount
         else:
             lo = max(0.0, float(m.min))
             hi = min(float(m.max), TOTAL)
@@ -87,7 +118,7 @@ def solve_recipe(
             f"所有原料最大用量之和为 {sum_hi:g}，小于总量 {TOTAL:g}（{detail}），边界冲突"
         )
     if conflicts:
-        return _empty("conflict", conflicts)
+        return _empty("conflict", conflicts), None
 
     # ---------- 组装最小二乘问题 ----------
     n = len(materials)
@@ -149,7 +180,7 @@ def solve_recipe(
             "并给出逐项偏差"
         )
 
-    return SolveResponse(
+    response = SolveResponse(
         status=status,  # type: ignore[arg-type]
         messages=messages,
         recipe=[
@@ -168,3 +199,13 @@ def solve_recipe(
         total_amount=round(float(x.sum()), 6),
         residual_norm=round(float(np.linalg.norm(deviation)), 6),
     )
+    return response, x
+
+
+def solve_recipe(
+    oxides: List[str],
+    target: Dict[str, float],
+    materials: List[MaterialIn],
+) -> SolveResponse:
+    response, _ = solve_core(oxides, target, materials)
+    return response

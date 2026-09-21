@@ -19,6 +19,11 @@
 - 内置示例数据（中温透明釉），一键加载
 - 配方 JSON **导入 / 导出**，求解结果 JSON 导出
 - 结果表：各原料用量、各氧化物目标 / 实际 / 偏差、残差范数
+- **配方鲁棒性分析**：输入单次扰动百分比并选择原料，将该原料用量按
+  ±扰动% 强制调整，在总量 = 100 与全部上下界约束下重新求解；展示两种
+  情景的配方变化、各氧化物偏差与残差增量，按残差增量降序排序并标出
+  **最敏感原料**；支持一键分析全部启用原料；调整后用量越界或破坏总量
+  约束时给出冲突提示（基准用量为 0 的原料会特别标注），分析结果可导出 JSON
 
 ## 运行（Docker Compose，单条命令）
 
@@ -94,6 +99,54 @@ npm run dev
 
 导入 / 导出的配方 JSON 与请求体结构一致（`oxides` / `target` / `materials`）。
 
+### `POST /api/robustness`
+
+在 `/api/solve` 同一问题结构上新增 `perturbation`（单次扰动百分比，>0）
+与可选 `material`（原料名；省略时分析全部启用原料）：
+
+```json
+{
+  "oxides": ["SiO2", "Al2O3"],
+  "target": { "SiO2": 55.46, "Al2O3": 11.55 },
+  "materials": [ /* 与 /api/solve 相同 */ ],
+  "perturbation": 5,
+  "material": "方解石"
+}
+```
+
+响应：
+
+```json
+{
+  "status": "ok | approximate | conflict | error",
+  "messages": ["共分析 7 种原料……最敏感原料为「方解石」……"],
+  "perturbation": 5.0,
+  "baseline": { /* 与 /api/solve 响应相同的基准解 */ },
+  "results": [
+    {
+      "material": "方解石",
+      "baseline_amount": 14.0,
+      "note": null,
+      "max_residual_increase": 0.211169,
+      "most_sensitive": true,
+      "up":   { "direction": "up",   "perturbed_amount": 14.7, "feasible": true,
+                "recipe": [ /* 调整后的完整配方 */ ],
+                "oxides": [ /* 目标 / 调整后实际 / 偏差 */ ],
+                "residual_norm": 0.2131, "residual_increase": 0.2111 },
+      "down": { "direction": "down", "perturbed_amount": 13.3, "feasible": false,
+                "status": "conflict",
+                "messages": ["原料「方解石」被调整后的用量 13.3 超出其用量边界 [14, 100]"] }
+    }
+  ]
+}
+```
+
+- 每个原料包含 `up`（+扰动%）/`down`（−扰动%）两个情景；
+  不可行情景 `feasible=false` 并在 `messages` 中说明越界或总量冲突
+- `results` 按 `max_residual_increase` 降序排列，
+  第一名置 `most_sensitive=true`（单原料分析时不标注排名）
+- 基准解本身为 `conflict` / `error` 时直接透传状态与消息，不产出 `results`
+
 ## 项目结构
 
 ```
@@ -102,15 +155,17 @@ npm run dev
 │   ├── Dockerfile          # python:3.12-slim，镜像内 pip install
 │   ├── requirements.txt
 │   └── app/
-│       ├── main.py         # FastAPI 入口（/api/health、/api/solve）
+│       ├── main.py         # FastAPI 入口（/api/health、/api/solve、/api/robustness）
 │       ├── models.py       # Pydantic 请求/响应模型
-│       └── solver.py       # SciPy SLSQP 约束最小二乘求解 + 冲突检测
+│       ├── solver.py       # SciPy SLSQP 约束最小二乘求解 + 冲突检测
+│       └── robustness.py   # ±扰动重新求解与敏感度排序
 └── frontend/
     ├── Dockerfile          # node:20 构建 + nginx 托管
     ├── nginx.conf          # 静态托管 + /api 反向代理
     └── src/
-        ├── App.tsx         # 主界面（氧化物表、原料表、结果表）
-        ├── api.ts          # 后端调用
-        ├── types.ts        # 类型定义
-        └── sample.ts       # 示例数据
+        ├── App.tsx           # 主界面（氧化物表、原料表、结果表）
+        ├── RobustnessPanel.tsx # 鲁棒性分析面板（扰动控制、情景对比）
+        ├── api.ts            # 后端调用
+        ├── types.ts          # 类型定义
+        └── sample.ts         # 示例数据
 ```

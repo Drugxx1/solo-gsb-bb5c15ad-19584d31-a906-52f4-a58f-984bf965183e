@@ -4,10 +4,11 @@ from __future__ import annotations
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .models import SolveRequest, SolveResponse
+from .models import RobustnessRequest, RobustnessResponse, SolveRequest, SolveResponse
+from .robustness import analyze_robustness
 from .solver import solve_recipe
 
-app = FastAPI(title="釉料配方反推 API", version="1.0.0")
+app = FastAPI(title="釉料配方反推 API", version="1.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,3 +26,8 @@ def health() -> dict:
 @app.post("/api/solve", response_model=SolveResponse)
 def solve(req: SolveRequest) -> SolveResponse:
     return solve_recipe(req.oxides, req.target, req.materials)
+
+
+@app.post("/api/robustness", response_model=RobustnessResponse)
+def robustness(req: RobustnessRequest) -> RobustnessResponse:
+    return analyze_robustness(req)

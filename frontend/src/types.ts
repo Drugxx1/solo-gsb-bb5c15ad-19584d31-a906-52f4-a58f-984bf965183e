@@ -33,3 +33,41 @@ export interface SolveResponse {
   total_amount: number;
   residual_norm: number;
 }
+
+export interface RobustnessRequest {
+  oxides: string[];
+  target: Record<string, number>;
+  materials: MaterialState[];
+  perturbation: number;
+  material?: string | null;
+}
+
+export interface ScenarioResult {
+  direction: 'up' | 'down';
+  perturbed_amount: number;
+  feasible: boolean;
+  status: SolveResponse['status'];
+  messages: string[];
+  recipe: RecipeItem[];
+  oxides: OxideResult[];
+  residual_norm: number;
+  residual_increase: number;
+}
+
+export interface RobustnessItem {
+  material: string;
+  baseline_amount: number;
+  note?: string | null;
+  up: ScenarioResult;
+  down: ScenarioResult;
+  max_residual_increase: number;
+  most_sensitive: boolean;
+}
+
+export interface RobustnessResponse {
+  status: SolveResponse['status'];
+  messages: string[];
+  perturbation: number;
+  baseline: SolveResponse | null;
+  results: RobustnessItem[];
+}
