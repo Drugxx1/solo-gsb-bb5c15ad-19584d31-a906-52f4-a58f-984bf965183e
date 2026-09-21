@@ -188,3 +188,152 @@ input.name {
 .zero {
   color: #999;
 }
+
+/* ---------------- 鲁棒性分析 ---------------- */
+
+.robust-controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 12px 0;
+}
+
+.robust-controls label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.robust-controls input[type='number'] {
+  width: 80px;
+}
+
+.robust-controls select {
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 140px;
+}
+
+.most-sensitive-row {
+  background: #fff1e5;
+}
+
+.sens-badge {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 8px;
+  border-radius: 10px;
+  background: #bc4c00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.conflict-text {
+  color: #cf222e;
+  font-weight: 600;
+}
+
+.delta-pos {
+  color: #cf222e;
+}
+
+.delta-neg {
+  color: #0969da;
+}
+
+.delta-zero {
+  color: #999;
+}
+
+.material-details {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  background: #fbfdff;
+}
+
+.material-details summary {
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 4px 0;
+}
+
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.scenario-card {
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px;
+  background: #fff;
+}
+
+.scenario-card h4 {
+  margin: 0 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.dir-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.dir-up {
+  background: #cf222e;
+}
+
+.dir-down {
+  background: #0969da;
+}
+
+.status-tag {
+  margin-left: auto;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.status-ok {
+  background: #dafbe1;
+  color: #1a7f37;
+  border: 1px solid #2da44e;
+}
+
+.status-approximate {
+  background: #fff8c5;
+  color: #9a6700;
+  border: 1px solid #d4a72c;
+}
+
+.status-conflict,
+.status-error {
+  background: #ffebe9;
+  color: #cf222e;
+  border: 1px solid #cf222e;
+}
+
+.scenario-msg {
+  margin: 6px 0;
+  padding: 6px 10px;
+}
+
+.scenario-card table {
+  margin-top: 8px;
+}

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { solveProblem } from './api';
 import { SAMPLE_PROBLEM } from './sample';
+import RobustnessPanel from './Robustness';
 import type { MaterialState, ProblemData, SolveResponse } from './types';
 
 const TOTAL = 100;
@@ -445,6 +446,8 @@ export default function App() {
           )}
         </section>
       )}
+
+      <RobustnessPanel problem={currentProblem()} />
     </div>
   );
 }

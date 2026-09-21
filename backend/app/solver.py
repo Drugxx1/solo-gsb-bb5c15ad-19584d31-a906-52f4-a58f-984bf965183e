@@ -14,7 +14,7 @@
 """
 from __future__ import annotations
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 from scipy.optimize import minimize
@@ -34,14 +34,23 @@ def solve_recipe(
     oxides: List[str],
     target: Dict[str, float],
     materials: List[MaterialIn],
+    fixed: Optional[Dict[int, float]] = None,
 ) -> SolveResponse:
+    """反推配方。
+
+    fixed：可选，键为原料下标、值为强制用量（用于鲁棒性分析的扰动情景）。
+    被固定的原料（无论是否禁用）用量恒等于该值，其余原料在总量=100 与
+    各自上下界内重新求解最小残差配方。
+    """
+    fixed = fixed or {}
+
     # ---------- 基本校验 ----------
     if not oxides:
         return _empty("error", ["至少需要定义一种氧化物"])
     if not materials:
         return _empty("error", ["至少需要定义一种原料"])
     enabled = [m for m in materials if not m.disabled]
-    if not enabled:
+    if not enabled and not fixed:
         return _empty("error", ["所有原料均被禁用，无法求解"])
 
     for o in oxides:
@@ -57,8 +66,22 @@ def solve_recipe(
     lbs: List[float] = []
     ubs: List[float] = []
     conflicts: List[str] = []
-    for m in materials:
-        if m.disabled:
+    for i, m in enumerate(materials):
+        if i in fixed:
+            val = float(fixed[i])
+            if not np.isfinite(val) or val < -EPS:
+                conflicts.append(f"原料「{m.name}」的固定用量 {val:g} 非法（需满足 0~100）")
+                lo, hi = 0.0, 0.0
+            else:
+                val = min(max(val, 0.0), TOTAL)
+                lo = hi = val
+                if not m.disabled and (val < float(m.min) - EPS or val > float(m.max) + EPS):
+                    conflicts.append(
+                        f"原料「{m.name}」的固定用量 {val:g} 超出其用量边界 "
+                        f"[{max(0.0, float(m.min)):g}, {min(float(m.max), TOTAL):g}]，"
+                        f"边界冲突"
+                    )
+        elif m.disabled:
             lo = hi = 0.0
         else:
             lo = max(0.0, float(m.min))
